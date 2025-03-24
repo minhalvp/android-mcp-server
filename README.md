@@ -82,11 +82,16 @@ of an MCP client. To use this server with Claude Desktop:
 }
 ```
 
-Replace:
+### Replacements
 
+#### uv
 - `path/to/uv` with the actual path to your `uv` executable
+- Use `whereis uv` to find the path.
+
+#### android-mcp-server
 - `path/to/android-mcp-server` with the absolute path to where you cloned this
 repository
+- Examples: `/Users/${USERNAME}/git/android-mcp-server` or `/home/${USERNAME}/git/android-mcp-server`
 
 
 https://github.com/user-attachments/assets/c45bbc17-f698-43e7-85b4-f1b39b8326a8
