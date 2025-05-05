@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/minhalvp-android-mcp-server-badge.png)](https://mseep.ai/app/minhalvp-android-mcp-server)
+
 # Android MCP Server
 
 An MCP (Model Context Protocol) server that provides programmatic control over
