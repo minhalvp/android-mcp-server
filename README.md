@@ -18,6 +18,7 @@ and Code editors
 
 - Python 3.x
 - ADB (Android Debug Bridge) installed and configured
+- Tesseract OCR engine (for text detection features)
 - Android device or emulator (not tested)
 
 ## Installation
@@ -29,7 +30,20 @@ git clone https://github.com/minhalvp/android-mcp-server.git
 cd android-mcp-server
 ```
 
-2. Install dependencies:
+2. Install Tesseract OCR engine:
+
+```bash
+# Ubuntu/Debian
+sudo apt install tesseract-ocr
+
+# macOS (with Homebrew)
+brew install tesseract
+
+# Windows
+# Download installer from: https://github.com/UB-Mannheim/tesseract/wiki
+```
+
+3. Install Python dependencies:
 This project uses [uv](https://github.com/astral-sh/uv) for project
 management via various methods of
 [installation](https://docs.astral.sh/uv/getting-started/installation/).
