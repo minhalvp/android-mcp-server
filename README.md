@@ -194,6 +194,29 @@ def get_screenshot() -> Image:
 ```
 
 ```python
+def get_screenshot_ocr(search_string: str, confidence_threshold: float = 60.0) -> list[dict]:
+    """
+    Search a screenshot for text and return the locations of it.
+    Args:
+        search_string: Text string to search for in the screenshot
+        confidence_threshold: Minimum OCR confidence threshold 0-100 (default: 60)
+    Returns:
+        List of dictionaries containing text matches with coordinates
+    """
+```
+
+```python
+def get_screenshot_text(confidence_threshold: float = 30.0) -> list[dict]:
+    """
+    Get all text from a screenshot using OCR.
+    Args:
+        confidence_threshold: Minimum OCR confidence threshold 0-100 (default: 30)
+    Returns:
+        List of dictionaries containing all detected text with coordinates
+    """
+```
+
+```python
 def get_package_action_intents(package_name: str) -> list[str]:
     """
     Get all non-data actions from Activity Resolver Table for a package
