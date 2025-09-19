@@ -18,6 +18,7 @@ and Code editors
 
 - Python 3.x
 - ADB (Android Debug Bridge) installed and configured
+- Tesseract OCR engine (for text detection features)
 - Android device or emulator (not tested)
 
 ## Installation
@@ -29,7 +30,20 @@ git clone https://github.com/minhalvp/android-mcp-server.git
 cd android-mcp-server
 ```
 
-2. Install dependencies:
+2. Install Tesseract OCR engine:
+
+```bash
+# Ubuntu/Debian
+sudo apt install tesseract-ocr
+
+# macOS (with Homebrew)
+brew install tesseract
+
+# Windows
+# Download installer from: https://github.com/UB-Mannheim/tesseract/wiki
+```
+
+3. Install Python dependencies:
 This project uses [uv](https://github.com/astral-sh/uv) for project
 management via various methods of
 [installation](https://docs.astral.sh/uv/getting-started/installation/).
@@ -190,6 +204,29 @@ def get_screenshot() -> Image:
     Takes a screenshot of the device and returns it.
     Returns:
         Image: the screenshot
+    """
+```
+
+```python
+def get_screenshot_ocr(search_string: str, confidence_threshold: float = 60.0) -> list[dict]:
+    """
+    Search a screenshot for text and return the locations of it.
+    Args:
+        search_string: Text string to search for in the screenshot
+        confidence_threshold: Minimum OCR confidence threshold 0-100 (default: 60)
+    Returns:
+        List of dictionaries containing text matches with coordinates
+    """
+```
+
+```python
+def get_screenshot_text(confidence_threshold: float = 30.0) -> list[dict]:
+    """
+    Get all text from a screenshot using OCR.
+    Args:
+        confidence_threshold: Minimum OCR confidence threshold 0-100 (default: 30)
+    Returns:
+        List of dictionaries containing all detected text with coordinates
     """
 ```
 

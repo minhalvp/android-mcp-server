@@ -1,7 +1,9 @@
 import os
 import subprocess
 import sys
+from typing import List, Dict, Optional
 
+import pytesseract
 from PIL import Image as PILImage
 from ppadb.client import Client as AdbClient
 
@@ -139,6 +141,76 @@ class AdbDeviceManager:
             resized_img.save(
                 "compressed_screenshot.png", "PNG", quality=85, optimize=True
             )
+    def ocr_on_screenshot(self, search_string: str = None, confidence_threshold: float = 60.0) -> List[Dict]:
+        """
+        Perform OCR on screenshot and return text locations.
+
+        Args:
+            search_string: Text to search for (if None, returns all text)
+            confidence_threshold: Minimum OCR confidence threshold 0-100
+
+        Returns:
+            List of dictionaries containing text matches with coordinates
+        """
+        self.device.shell("screencap -p /sdcard/screenshot.png")
+        self.device.pull("/sdcard/screenshot.png", "screenshot.png")
+        self.device.shell("rm /sdcard/screenshot.png")
+
+        try:
+            # Load image for OCR processing
+            image = PILImage.open("screenshot.png")
+            original_width, original_height = image.size
+
+            # Get OCR data with bounding boxes
+            ocr_data = pytesseract.image_to_data(image, output_type=pytesseract.Output.DICT)
+
+            results = []
+
+            # Process each detected text element
+            for i in range(len(ocr_data['text'])):
+                text = ocr_data['text'][i].strip()
+                confidence = float(ocr_data['conf'][i])
+
+                # Skip low confidence or empty text
+                if confidence < confidence_threshold or not text:
+                    continue
+
+                # Check if search text matches (case insensitive)
+                if search_string is None:
+                    # Return all text if no search string provided
+                    include_text = True
+                else:
+                    include_text = search_string.lower() in text.lower()
+
+                if include_text:
+                    # Get bounding box coordinates
+                    left = ocr_data['left'][i]
+                    top = ocr_data['top'][i]
+                    width = ocr_data['width'][i]
+                    height = ocr_data['height'][i]
+
+                    # Calculate center coordinates
+                    center_x = left + width // 2
+                    center_y = top + height // 2
+
+                    result = {
+                        "text": text,
+                        "center_x": center_x,
+                        "center_y": center_y,
+                        "confidence": confidence,
+                        "bbox": {
+                            "left": left,
+                            "top": top,
+                            "width": width,
+                            "height": height
+                        }
+                    }
+                    results.append(result)
+
+            return results
+
+        except Exception as e:
+            raise Exception(f"Error processing OCR: {str(e)}")
 
     def get_uilayout(self) -> str:
         self.device.shell("uiautomator dump")

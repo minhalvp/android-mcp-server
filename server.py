@@ -94,6 +94,57 @@ def get_screenshot() -> Image:
     deviceManager.take_screenshot()
     return Image(path="compressed_screenshot.png")
 
+@mcp.tool()
+def get_screenshot_ocr(search_string: str, confidence_threshold: float = 60.0) -> list[dict]:
+    """Search a screenshot for text and return the locations of it.
+
+    Args:
+        search_string: Text string to search for in the screenshot
+        confidence_threshold: Minimum OCR confidence threshold 0-100 (default: 60)
+
+    Returns:
+        List of dictionaries containing text matches with coordinates:
+        {
+            "text": "matching_text",
+            "center_x": 420,
+            "center_y": 750,
+            "confidence": 87.5,
+            "bbox": {
+                "left": 380,
+                "top": 735,
+                "width": 80,
+                "height": 30
+            }
+        }
+    """
+    detections = deviceManager.ocr_on_screenshot(search_string, confidence_threshold)
+    return detections 
+
+@mcp.tool()
+def get_screenshot_text(confidence_threshold: float = 30.0) -> list[dict]:
+    """Get all text from a screenshot using OCR.
+
+    Args:
+        confidence_threshold: Minimum OCR confidence threshold 0-100 (default: 30)
+
+    Returns:
+        List of dictionaries containing all detected text with coordinates:
+        {
+            "text": "detected_text",
+            "center_x": 420,
+            "center_y": 750,
+            "confidence": 87.5,
+            "bbox": {
+                "left": 380,
+                "top": 735,
+                "width": 80,
+                "height": 30
+            }
+        }
+    """
+    detections = deviceManager.ocr_on_screenshot(search_string=None, confidence_threshold=confidence_threshold)
+    return detections
+
 
 @mcp.tool()
 def get_package_action_intents(package_name: str) -> list[str]:

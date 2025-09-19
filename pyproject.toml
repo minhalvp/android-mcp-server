@@ -13,6 +13,7 @@ dependencies = [
     "pure-python-adb>=0.3.0.dev0",
     "PyYAML>=6.0",
     "Pillow>=10.0.0",
+    "pytesseract>=0.3.0",
 ]
 
 [project.optional-dependencies]
