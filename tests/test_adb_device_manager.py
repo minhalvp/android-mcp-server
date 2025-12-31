@@ -138,10 +138,13 @@ class TestAdbDeviceManager:
 
         assert result is False
 
+    @patch('adbdevicemanager.AdbDeviceManager.check_adb_installed')
     @patch('adbdevicemanager.AdbClient')
-    def test_get_available_devices(self, mock_adb_client):
+    def test_get_available_devices(self, mock_adb_client, mock_check_adb):
         """Test getting available devices"""
-        # Setup mock devices
+        # Setup mocks
+        mock_check_adb.return_value = True
+
         mock_device1 = MagicMock()
         mock_device1.serial = "device123"
         mock_device2 = MagicMock()
@@ -149,8 +152,13 @@ class TestAdbDeviceManager:
 
         mock_adb_client.return_value.devices.return_value = [
             mock_device1, mock_device2]
+        mock_adb_client.return_value.device.return_value = MagicMock()
 
-        devices = AdbDeviceManager.get_available_devices()
+        # Create manager with first device to test get_available_devices
+        with patch('builtins.print'):
+            manager = AdbDeviceManager(device_name="device123", exit_on_error=False)
+
+        devices = manager.get_available_devices()
 
         assert devices == ["device123", "device456"]
 
@@ -169,3 +177,33 @@ class TestAdbDeviceManager:
                 AdbDeviceManager(device_name=None, exit_on_error=True)
 
             mock_exit.assert_called_once_with(1)
+
+    @patch('adbdevicemanager.AdbDeviceManager.check_adb_installed')
+    @patch('adbdevicemanager.AdbClient')
+    def test_custom_adb_host_port(self, mock_adb_client, mock_check_adb):
+        """Test that custom ADB host and port are used"""
+        # Setup mocks
+        mock_check_adb.return_value = True
+        mock_device1 = MagicMock()
+        mock_device1.serial = "device123"
+        mock_adb_client.return_value.devices.return_value = [mock_device1]
+        mock_adb_client.return_value.device.return_value = MagicMock()
+
+        # Test with custom host and port
+        custom_host = "192.168.1.100"
+        custom_port = 5038
+
+        with patch('builtins.print'):
+            manager = AdbDeviceManager(
+                device_name=None,
+                exit_on_error=False,
+                adb_host=custom_host,
+                adb_port=custom_port
+            )
+
+        # Verify custom host and port are stored
+        assert manager.adb_host == custom_host
+        assert manager.adb_port == custom_port
+
+        # Verify AdbClient was called with custom host and port
+        mock_adb_client.assert_called_with(host=custom_host, port=custom_port)

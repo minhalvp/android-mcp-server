@@ -12,11 +12,20 @@ CONFIG_FILE_EXAMPLE = "config.yaml.example"
 # Load config (make config file optional)
 config = {}
 device_name = None
+adb_host = "127.0.0.1"
+adb_port = 5037
 
 if os.path.exists(CONFIG_FILE):
     try:
         with open(CONFIG_FILE) as f:
             config = yaml.safe_load(f.read()) or {}
+
+        # Load ADB server configuration
+        adb_config = config.get("adb", {})
+        if adb_config:
+            adb_host = adb_config.get("host", adb_host)
+            adb_port = adb_config.get("port", adb_port)
+
         device_config = config.get("device", {})
         configured_device_name = device_config.get(
             "name") if device_config else None
@@ -28,9 +37,11 @@ if os.path.exists(CONFIG_FILE):
         if configured_device_name and configured_device_name.strip():
             device_name = configured_device_name.strip()
             print(f"Loaded config from {CONFIG_FILE}")
+            print(f"ADB server: {adb_host}:{adb_port}")
             print(f"Configured device: {device_name}")
         else:
             print(f"Loaded config from {CONFIG_FILE}")
+            print(f"ADB server: {adb_host}:{adb_port}")
             print(
                 "No device specified in config, will auto-select if only one device connected")
     except Exception as e:
@@ -45,7 +56,7 @@ else:
 # Initialize MCP and device manager
 # AdbDeviceManager will handle auto-selection if device_name is None
 mcp = FastMCP("android")
-deviceManager = AdbDeviceManager(device_name)
+deviceManager = AdbDeviceManager(device_name, adb_host=adb_host, adb_port=adb_port)
 
 
 @mcp.tool()
