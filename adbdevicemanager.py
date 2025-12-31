@@ -7,7 +7,13 @@ from ppadb.client import Client as AdbClient
 
 
 class AdbDeviceManager:
-    def __init__(self, device_name: str | None = None, exit_on_error: bool = True) -> None:
+    def __init__(
+        self,
+        device_name: str | None = None,
+        exit_on_error: bool = True,
+        adb_host: str = "127.0.0.1",
+        adb_port: int = 5037,
+    ) -> None:
         """
         Initialize the ADB Device Manager
 
@@ -15,7 +21,12 @@ class AdbDeviceManager:
             device_name: Optional name/serial of the device to manage.
                          If None, attempts to auto-select if only one device is available.
             exit_on_error: Whether to exit the program if device initialization fails
+            adb_host: Host address of the ADB server (default: 127.0.0.1)
+            adb_port: Port of the ADB server (default: 5037)
         """
+        self.adb_host = adb_host
+        self.adb_port = adb_port
+
         if not self.check_adb_installed():
             error_msg = "adb is not installed or not in PATH. Please install adb and ensure it is in your PATH."
             if exit_on_error:
@@ -60,7 +71,7 @@ class AdbDeviceManager:
 
         # At this point, selected_device_name should always be set due to the logic above
         # Initialize the device
-        self.device = AdbClient().device(selected_device_name)
+        self.device = AdbClient(host=self.adb_host, port=self.adb_port).device(selected_device_name)
 
     @staticmethod
     def check_adb_installed() -> bool:
@@ -72,10 +83,9 @@ class AdbDeviceManager:
         except (subprocess.CalledProcessError, FileNotFoundError):
             return False
 
-    @staticmethod
-    def get_available_devices() -> list[str]:
+    def get_available_devices(self) -> list[str]:
         """Get a list of available devices."""
-        return [device.serial for device in AdbClient().devices()]
+        return [device.serial for device in AdbClient(host=self.adb_host, port=self.adb_port).devices()]
 
     def get_packages(self) -> str:
         command = "pm list packages"

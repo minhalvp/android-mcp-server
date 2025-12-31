@@ -1,6 +1,12 @@
 # Android MCP Server Configuration
 # All sections are optional
 
+# ADB server configuration (optional)
+# If not specified, defaults to localhost:5037
+adb:
+  host: "127.0.0.1"       # ADB server host (default: 127.0.0.1)
+  port: 5037              # ADB server port (default: 5037)
+
 # Device configuration (optional)
 # If not specified or name is empty, will auto-select device when only one is connected
 device:
