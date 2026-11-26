@@ -1,0 +1,49 @@
+name: Publish
+
+# Push a tag such as v0.2.0a1 or v0.2.0 to release that version to PyPI.
+# Uses PyPI Trusted Publishing, so no API token is stored anywhere. The upload
+# waits for approval on the `pypi` environment.
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  version:
+    name: Tag matches pyproject.toml
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
+      - env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          version="$(uv version --short)"
+          if [ "$TAG" != "v$version" ]; then
+            echo "::error::tag $TAG does not match version $version in pyproject.toml (expected v$version)"
+            exit 1
+          fi
+
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  publish:
+    needs: [version, ci]
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/android-pilot/
+    permissions:
+      id-token: write # Trusted Publishing
+    steps:
+      # The wheel and sdist that ci.yml built and tested.
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086 # v1.14.3

@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  schedule:
+    # Weekly, to catch a new release of a dependency that breaks us.
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+  # publish.yml runs these same checks before releasing.
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
+      - name: uv.lock matches pyproject.toml
+        run: uv lock --check
+      - run: uv run --locked ruff check .
+      - run: uv run --locked ruff format --check .
+      - run: uv run --locked ty check
+
+  test:
+    name: test (py${{ matrix.python }}, ${{ matrix.resolution }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.12", "3.13", "3.14"]
+        # highest: the newest dependencies, what a fresh `uvx android-pilot` installs.
+        resolution: [highest]
+        include:
+          # lowest-direct: the oldest versions pyproject.toml allows, to prove the lower
+          # bounds. Only on 3.11: the oldest Pillow has no wheels for newer Pythons.
+          - python: "3.11"
+            resolution: lowest-direct
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Resolve dependencies
+        run: uv lock --upgrade --resolution ${{ matrix.resolution }}
+      - name: Installed versions
+        run: uv run python -c "import importlib.metadata as m; print(*(f'{p} {m.version(p)}' for p in ('mcp', 'Pillow')), sep='\n')"
+      - run: uv run pytest
+
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
+      - run: uv build
+      - name: Check metadata and README render
+        run: uvx twine check --strict dist/*
+      - name: Wheel installs and runs
+        run: uvx --isolated --from dist/*.whl android-pilot --help
+      - name: Tests pass from the sdist
+        run: |
+          mkdir sdist
+          tar xzf dist/*.tar.gz -C sdist --strip-components=1
+          cd sdist
+          uv run --isolated --with pytest pytest
+      # publish.yml uploads exactly these files.
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
