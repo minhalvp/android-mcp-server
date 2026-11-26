@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "android-pilot"
-version = "0.2.0"
+version = "0.2.0a1"
 description = "MCP server that lets an AI assistant drive an Android device over adb"
 readme = "README.md"
 requires-python = ">=3.11"
