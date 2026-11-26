@@ -1,29 +1,57 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
+requires = ["setuptools>=77.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "android-mcp"
-version = "0.1.0"
-description = "An MCP server for android automation"
+name = "android-pilot"
+version = "0.2.0"
+description = "MCP server that lets an AI assistant drive an Android device over adb"
 readme = "README.md"
 requires-python = ">=3.11"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+authors = [{ name = "minhalvp" }]
+keywords = ["mcp", "model-context-protocol", "android", "adb", "automation", "ai-agent"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development :: Testing",
+]
 dependencies = [
-    "mcp>=1.0.0",
-    "pure-python-adb>=0.3.0.dev0",
-    "PyYAML>=6.0",
+    "mcp>=2,<3",
     "Pillow>=10.0.0",
 ]
 
-[project.optional-dependencies]
-test = ["pytest>=8.0.0", "pytest-mock>=3.12.0", "pytest-cov>=4.0.0"]
+[project.urls]
+Homepage = "https://github.com/minhalvp/android-mcp-server"
+Issues = "https://github.com/minhalvp/android-mcp-server/issues"
+Changelog = "https://github.com/minhalvp/android-mcp-server/blob/master/CHANGELOG.md"
 
-[tool.setuptools]
-py-modules = ["server", "adbdevicemanager"]
+[project.scripts]
+android-pilot = "android_pilot.server:main"
+
+[tool.setuptools.packages.find]
+include = ["android_pilot*"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM"]
+
+[tool.ty.src]
+include = ["android_pilot", "tests"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-python_files = ["test_*.py"]
-python_classes = ["Test*"]
-python_functions = ["test_*"]
-addopts = ["--strict-markers", "--disable-warnings", "-v"]
+addopts = ["--strict-markers", "-v"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+    "ruff>=0.16.3",
+    "ty>=0.0.72",
+]

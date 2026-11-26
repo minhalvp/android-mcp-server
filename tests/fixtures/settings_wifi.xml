@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hierarchy rotation="0">
+  <node index="0" clickable="false" bounds="[0,0][1080,2400]" class="android.widget.FrameLayout" package="com.android.settings">
+    <node index="0" clickable="false" text="Network &amp; internet" content-desc=""
+          resource-id="com.android.settings:id/title" class="android.widget.TextView"
+          package="com.android.settings" bounds="[48,80][700,170]" enabled="true"/>
+    <node index="1" clickable="true" checkable="true" checked="true" enabled="true"
+          text="Wi-Fi" content-desc="Wi-Fi is on" resource-id="com.android.settings:id/wifi_switch"
+          class="android.widget.Switch" package="com.android.settings" bounds="[760,210][1030,340]"/>
+    <node index="2" clickable="true" enabled="true" text="Internet" content-desc=""
+          resource-id="com.android.settings:id/internet_settings"
+          class="android.widget.LinearLayout" package="com.android.settings" bounds="[30,360][1050,510]"/>
+    <node index="3" clickable="true" editable="true" focusable="true" enabled="true"
+          password="false" text="" content-desc="Search settings"
+          resource-id="com.android.settings:id/search_action_bar"
+          class="android.widget.EditText" package="com.android.settings" bounds="[60,540][1020,680]"/>
+    <node index="4" clickable="false" scrollable="true" enabled="true" text="" content-desc=""
+          resource-id="com.android.settings:id/recycler_view"
+          class="androidx.recyclerview.widget.RecyclerView" package="com.android.settings"
+          bounds="[0,700][1080,2300]">
+      <node index="0" clickable="false" text="SIMs" content-desc=""
+            class="android.widget.TextView" package="com.android.settings" bounds="[60,760][400,850]"/>
+    </node>
+  </node>
+</hierarchy>

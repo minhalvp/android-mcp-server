@@ -16,3 +16,4 @@ output.mov
 config.yaml
 test.py
 .coverage
+.zed
