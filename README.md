@@ -190,8 +190,8 @@ android_pilot/
   device.py   the adb binary: the only module that runs anything
 ```
 
-Changes are listed in [CHANGELOG.md](CHANGELOG.md).
+Changes are listed in [CHANGELOG.md](https://github.com/minhalvp/android-mcp-server/blob/master/CHANGELOG.md).
 
 ## License
 
-[Apache 2.0](LICENSE)
+[Apache 2.0](https://github.com/minhalvp/android-mcp-server/blob/master/LICENSE)
