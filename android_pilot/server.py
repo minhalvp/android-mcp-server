@@ -1,18 +1,24 @@
 """The MCP server: the tools a model uses to drive the phone, and the command that starts it."""
 
 import argparse
+import functools
 import os
 import sys
+from collections.abc import Callable
 from io import BytesIO
-from typing import Literal, get_args
+from typing import Literal, ParamSpec, TypeVar, get_args
 
 from mcp.server import MCPServer
 from mcp.server.mcpserver import Image
+from mcp.server.mcpserver.exceptions import ToolError
 from PIL import Image as PILImage
 
 from . import __version__
 from .device import Device, DeviceError, Key, connect
-from .screen import EMPTY, FLAGS, Bounds, Element, Point, Role, Snapshot
+from .screen import EMPTY, FLAGS, Bounds, Element, Point, RefError, Role, Snapshot
+
+P = ParamSpec("P")
+R = TypeVar("R")
 
 Direction = Literal["up", "down", "left", "right"]
 
@@ -60,8 +66,21 @@ def create_server(device: Device) -> MCPServer:
         return f"{message}\n\n{observe()}" if then_snapshot else message
 
     def tool(name: str | None = None):
-        # Every result is plain text; structured output would send it twice.
-        return mcp.tool(name=name, structured_output=False)
+        def register(fn: Callable[P, R]) -> Callable[P, R]:
+            # The SDK hides the message of any exception other than ToolError
+            # from the model, so re-raise the failures we expect as ToolError.
+            @functools.wraps(fn)
+            def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
+                try:
+                    return fn(*args, **kwargs)
+                except (ValueError, RefError, DeviceError) as e:
+                    raise ToolError(str(e)) from e
+
+            # Every result is plain text; structured output would send it twice.
+            mcp.tool(name=name, structured_output=False)(wrapper)
+            return wrapper
+
+        return register
 
     @tool()
     def snapshot(include_offscreen: bool = False) -> str:
