@@ -79,7 +79,11 @@ Add these after `"android-pilot"` in `args`:
 | `--device <serial>` | first device in `adb devices` | Choose a device when several are connected: a serial (`13b22d7f`), emulator (`emulator-5554`) or wireless device (`192.168.1.10:5555`, after `adb connect`) |
 | `--adb-path <path>` | `$ADB_PATH`, then `adb` on `PATH` | Pin the adb binary to use |
 
-The server prints the device and adb binary it chose to stderr.
+The server starts even if adb or the device isn't ready yet, so you can plug
+the phone in after starting your client. Until then, tools return an error
+that says what's missing, and the next call looks again. A wrong `--adb-path`
+(or `ADB_PATH`) stops the server at startup instead. The device and adb binary
+it picks are printed to stderr.
 
 ## Tools
 
@@ -160,11 +164,14 @@ Pass `--adb-path` to pin a binary you trust instead of relying on `PATH`.
 | Symptom | Fix |
 |---------|-----|
 | Client can't start the server | Use the full path to `uvx` (`which uvx`) as `command`; GUI clients often don't share your shell's `PATH` |
-| `adb is not installed or not in PATH` | Install [platform-tools](https://developer.android.com/tools/releases/platform-tools), or pass `--adb-path /full/path/to/adb` |
-| `No devices connected` | Check the cable, enable USB debugging, run `adb devices` |
-| Device shows `unauthorized` | Accept the "Allow USB debugging" prompt; if it doesn't appear, run `adb kill-server` and retry |
-| `Device … not found` | `--device` must match the first column of `adb devices` exactly |
-| `adb … timed out after 30s` | The device or adb server is stuck: replug, or run `adb kill-server` |
+| `adb is not on PATH` | Install [platform-tools](https://developer.android.com/tools/releases/platform-tools), or pass `--adb-path /full/path/to/adb` |
+| Server exits with `adb not found at …` or `… is not executable` | `--adb-path` / `ADB_PATH` must point to the adb binary itself |
+| `no devices connected` | Check the cable, enable USB debugging, run `adb devices`. No restart needed: the next tool call looks again |
+| `device … is unauthorized` | Unlock the phone and accept the "Allow USB debugging" prompt; if it doesn't appear, run `adb kill-server` and retry |
+| `device … is offline` | Reconnect the device (cable or wireless debugging), or run `adb kill-server` |
+| `adb can't access device … no permissions` | Linux: install udev rules for Android devices (e.g. the `android-udev` package) and replug |
+| `device … not found` | `--device` must match the first column of `adb devices` exactly |
+| `adb … timed out after 15s` | The device or adb server is stuck: replug, or run `adb kill-server` |
 | `… changed or is gone; call snapshot again` | The screen changed since the snapshot. Call `snapshot` and retry |
 | `… moved and N elements now match it` | The element moved, and several identical ones (e.g. repeated "Details" rows) are now on screen, so the server won't guess. Call `snapshot` and retry |
 | `type` fails on non-ASCII | adb text entry supports printable ASCII only |
