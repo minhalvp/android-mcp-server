@@ -3,13 +3,15 @@
 import asyncio
 import base64
 import io
+from unittest.mock import patch
 
 import pytest
 from mcp import Client
 from mcp.types import ImageContent
 from PIL import Image as PILImage
 
-from android_pilot.server import create_server
+from android_pilot.device import AdbDevice, DeviceError
+from android_pilot.server import create_server, main
 
 from .fakes import EMPTY_SCREEN, FakeDevice
 
@@ -198,6 +200,70 @@ class TestKeyAndShell:
         device = FakeDevice(shell_output="output")
         assert text(call(device, ("shell", {"command": command}))) == "output"
         assert device.actions == [("shell", "ls")]
+
+
+def test_device_errors_reach_the_agent():
+    class Unplugged(FakeDevice):
+        def ui_dump(self) -> str:
+            raise DeviceError("no devices connected; check the cable and that USB debugging is allowed")
+
+    result = call(Unplugged(), ("snapshot", {}))
+    assert result.is_error is True
+    assert text(result).endswith(": no devices connected; check the cable and that USB debugging is allowed")
+
+
+class TestMain:
+    def run_main(self, *argv: str):
+        with (
+            patch("sys.argv", ["android-pilot", *argv]),
+            patch("android_pilot.server.create_server") as create,
+        ):
+            main()
+        return create
+
+    def test_starts_without_a_device(self, capsys):
+        with patch.object(AdbDevice, "connect", side_effect=DeviceError("no devices connected")):
+            create = self.run_main()
+        create.return_value.run.assert_called_once_with(transport="stdio")
+        assert "no devices connected; tools will keep looking when called" in capsys.readouterr().err
+
+    def test_starts_without_adb(self):
+        with patch.object(AdbDevice, "connect", side_effect=DeviceError("adb is not on PATH")):
+            self.run_main().return_value.run.assert_called_once()
+
+    def test_passes_the_options_to_the_device(self, tmp_path):
+        binary = tmp_path / "adb"
+        binary.touch(0o755)
+        with patch.object(AdbDevice, "connect") as connect:
+            create = self.run_main("--device", "emulator-5554", "--adb-path", str(binary))
+        [device] = create.call_args.args
+        connect.assert_called_once()
+        assert (device._pinned_adb, device._pinned_serial) == (str(binary), "emulator-5554")
+
+    @pytest.mark.parametrize(
+        ("name", "mode", "message"),
+        [
+            ("missing", None, "adb not found at"),
+            ("adb", 0o644, "is not executable"),
+            ("dir", "dir", "adb not found at"),
+        ],
+    )
+    def test_a_wrong_adb_path_is_fatal(self, tmp_path, capsys, name, mode, message):
+        path = tmp_path / name
+        if mode == "dir":
+            path.mkdir()
+        elif mode is not None:
+            path.touch(mode)
+        with patch.object(AdbDevice, "connect") as connect, pytest.raises(SystemExit) as exit:
+            self.run_main("--adb-path", str(path))
+        assert exit.value.code == 2
+        assert message in capsys.readouterr().err
+        connect.assert_not_called()
+
+    def test_a_wrong_adb_path_env_var_is_fatal_too(self, tmp_path, capsys):
+        with patch.dict("os.environ", {"ADB_PATH": str(tmp_path / "missing")}), pytest.raises(SystemExit):
+            self.run_main()
+        assert "adb not found at" in capsys.readouterr().err
 
 
 def test_screenshot_is_downscaled():

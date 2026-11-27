@@ -14,7 +14,7 @@ from mcp.server.mcpserver.exceptions import ToolError
 from PIL import Image as PILImage
 
 from . import __version__
-from .device import Device, DeviceError, Key, connect
+from .device import AdbDevice, Device, DeviceError, Key
 from .screen import EMPTY, FLAGS, Bounds, Element, Point, RefError, Role, Snapshot
 
 P = ParamSpec("P")
@@ -199,10 +199,17 @@ def main() -> None:
         help="adb binary to use (default: $ADB_PATH, then adb on PATH); set it to pin a trusted binary",
     )
     args = parser.parse_args()
+    # A wrong value the user configured is fatal. Anything missing from the
+    # environment (adb, the phone) is reported by the tools instead, where the
+    # agent can see it, and fixing it doesn't need a restart.
+    if args.adb_path:
+        if not os.path.isfile(args.adb_path):
+            parser.error(f"adb not found at {args.adb_path}")
+        if not os.access(args.adb_path, os.X_OK):
+            parser.error(f"adb at {args.adb_path} is not executable")
+    device = AdbDevice(args.adb_path, args.device)
     try:
-        device = connect(args.device, args.adb_path)
+        device.connect()  # only to report the device in the client's log; stdout is the MCP transport
     except DeviceError as e:
-        parser.error(str(e))
-    # stdout is the MCP transport.
-    print(f"android-pilot: using device {device.serial} via {device.adb_path}", file=sys.stderr)
+        print(f"android-pilot: {e}; tools will keep looking when called", file=sys.stderr)
     create_server(device).run(transport="stdio")

@@ -36,7 +36,13 @@ instead of pixel coordinates.
   only moved (a keyboard opened, a list re-sorted) is still found, unless
   several identical elements now match it.
 - `--adb-path` flag and `ADB_PATH` environment variable to pin the adb binary.
-- 30-second timeout on every adb call.
+- 15-second timeout on every adb call.
+- The server starts without a device or adb, instead of exiting before the
+  client can connect. Tools report what's missing (no device, unauthorized,
+  offline, no permissions, adb not on PATH) with how to fix it, and look again
+  on the next call, so plugging the phone in later needs no restart. A device
+  that reconnects under a new serial, as wireless debugging does, is found
+  again. A wrong `--adb-path` still stops the server at startup.
 
 ### Changed
 
