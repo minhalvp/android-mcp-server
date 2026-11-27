@@ -41,8 +41,9 @@ instead of pixel coordinates.
   client can connect. Tools report what's missing (no device, unauthorized,
   offline, no permissions, adb not on PATH) with how to fix it, and look again
   on the next call, so plugging the phone in later needs no restart. A device
-  that reconnects under a new serial, as wireless debugging does, is found
-  again. A wrong `--adb-path` still stops the server at startup.
+  that reconnects under a new serial (for example after `adb connect` to a new
+  wireless-debugging port) is found again. A wrong `--adb-path` still stops the
+  server at startup.
 
 ### Changed
 

@@ -9,7 +9,7 @@ resolution-markers = [
 
 [[package]]
 name = "android-pilot"
-version = "0.2.0a1"
+version = "0.2.0a2"
 source = { editable = "." }
 dependencies = [
     { name = "mcp" },
