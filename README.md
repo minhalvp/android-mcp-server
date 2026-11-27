@@ -2,7 +2,7 @@
 
 <!-- mcp-name: io.github.minhalvp/android-pilot -->
 
-Let an AI assistant use an Android phone or emulator. android-pilot is an
+Let an AI agent use an Android phone or emulator. android-pilot is an
 [MCP](https://modelcontextprotocol.io) server that drives your device over
 [adb](https://developer.android.com/tools/adb), so any MCP client (Claude Code,
 Codex, OpenCode, ...) can read the screen and interact with it.

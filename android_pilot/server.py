@@ -191,7 +191,7 @@ def _swipe_points(direction: Direction, bounds: Bounds) -> tuple[Point, Point]:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(prog="android-pilot", description="Let an AI assistant drive an Android device")
+    parser = argparse.ArgumentParser(prog="android-pilot", description="Let an AI agent drive an Android device")
     parser.add_argument("--device", help="serial from 'adb devices' (default: the first connected device)")
     parser.add_argument(
         "--adb-path",

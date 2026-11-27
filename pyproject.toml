@@ -5,7 +5,7 @@ build-backend = "uv_build"
 [project]
 name = "android-pilot"
 version = "0.2.0a1"
-description = "MCP server that lets an AI assistant drive an Android device over adb"
+description = "MCP server that lets an AI agent drive an Android device over adb"
 readme = "README.md"
 requires-python = ">=3.11"
 license = "Apache-2.0"
