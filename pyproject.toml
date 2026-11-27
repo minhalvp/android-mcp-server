@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools>=77.0"]
-build-backend = "setuptools.build_meta"
+requires = ["uv_build>=0.13.10,<0.14"]
+build-backend = "uv_build"
 
 [project]
 name = "android-pilot"
@@ -36,8 +36,10 @@ Changelog = "https://github.com/minhalvp/android-mcp-server/blob/master/CHANGELO
 [project.scripts]
 android-pilot = "android_pilot.server:main"
 
-[tool.setuptools.packages.find]
-include = ["android_pilot*"]
+[tool.uv.build-backend]
+module-root = ""
+# Ship the tests in the sdist so downstream packagers can run them.
+source-include = ["tests/**"]
 
 [tool.ruff]
 line-length = 120
