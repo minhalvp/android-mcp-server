@@ -25,6 +25,10 @@ Direction = Literal["up", "down", "left", "right"]
 # Screenshots are sent at this fraction of the device's resolution, and tap's
 # x, y are read in the same pixels.
 SCREENSHOT_SCALE = 0.3
+# Model APIs count image tokens from pixel dimensions, not file size, so JPEG
+# costs the same tokens as PNG with a much smaller payload. 80 keeps small UI
+# text legible.
+SCREENSHOT_JPEG_QUALITY = 80
 LONG_PRESS_MS = 700
 SWIPE_MS = 300
 _SWIPE_SPAN = 0.6  # fraction of the region the finger travels
@@ -96,8 +100,10 @@ def create_server(device: Device) -> MCPServer:
         with PILImage.open(BytesIO(device.screenshot())) as image:
             size = (int(image.width * SCREENSHOT_SCALE), int(image.height * SCREENSHOT_SCALE))
             out = BytesIO()
-            image.resize(size, PILImage.Resampling.LANCZOS).save(out, "PNG", optimize=True)
-        return Image(data=out.getvalue(), format="png")
+            # screencap PNGs carry an alpha channel, which JPEG can't store.
+            resized = image.convert("RGB").resize(size, PILImage.Resampling.LANCZOS)
+            resized.save(out, "JPEG", quality=SCREENSHOT_JPEG_QUALITY, optimize=True)
+        return Image(data=out.getvalue(), format="jpeg")
 
     @tool()
     def tap(
