@@ -266,12 +266,14 @@ class TestMain:
         assert "adb not found at" in capsys.readouterr().err
 
 
-def test_screenshot_is_downscaled():
+def test_screenshot_is_a_downscaled_jpeg():
     source = io.BytesIO()
-    PILImage.new("RGB", (1000, 2000), "red").save(source, "PNG")
+    # screencap returns RGBA, which JPEG can't store as is.
+    PILImage.new("RGBA", (1000, 2000), "red").save(source, "PNG")
 
     [image] = call(FakeDevice(screenshot_png=source.getvalue()), ("screenshot", {})).content
 
     assert isinstance(image, ImageContent)
+    assert image.mime_type == "image/jpeg"
     with PILImage.open(io.BytesIO(base64.b64decode(image.data))) as img:
-        assert (img.format, img.size) == ("PNG", (300, 600))
+        assert (img.format, img.size) == ("JPEG", (300, 600))

@@ -50,6 +50,9 @@ instead of pixel coordinates.
 - Calls the `adb` binary directly. `pure-python-adb` and `PyYAML` are no longer
   dependencies; `mcp` 2.x is required.
 - Screenshots are processed in memory and never written to disk.
+- Screenshots are sent as JPEG (quality 80) instead of PNG, roughly a third of
+  the size. Model APIs count image tokens from pixel dimensions, not file
+  size, so the token cost is unchanged.
 - Tool results are plain text only, without a duplicate structured copy.
 - Text in fields that Android marks as passwords is left out of snapshots and
   error messages, including the label of a row that contains the field.

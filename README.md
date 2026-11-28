@@ -90,7 +90,7 @@ it picks are printed to stderr.
 | Tool | Purpose |
 |------|---------|
 | `snapshot(include_offscreen=False)` | The screen as compact text, with a ref for each actionable element |
-| `screenshot()` | The screen as an image, at 30% of the device's resolution |
+| `screenshot()` | The screen as a JPEG, at 30% of the device's resolution |
 | `tap(ref \| x, y, hold=False)` | Tap (or long-press) an element, or a point in screenshot pixels |
 | `swipe(direction, ref=None)` | Swipe `up`, `down`, `left` or `right` across an element or the screen. `up` scrolls down |
 | `type(text, ref=None, clear=False, submit=False)` | Type printable ASCII. `ref` focuses the field first, `clear` empties it, `submit` presses Enter |
